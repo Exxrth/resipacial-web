@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
+import ContactForm from '@/components/properties/ContactForm'
 import type { Metadata } from 'next'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -114,6 +115,12 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                 </div>
               </div>
             </div>
+
+            {/* Contact Form — full width below columns */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <ContactForm propertyId={property.id} contactName={property.contact_name} />
+            </div>
+
           </div>
         </div>
       </main>

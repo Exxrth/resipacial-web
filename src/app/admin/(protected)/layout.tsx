@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             { href: '/admin', label: '📊 Dashboard' },
             { href: '/admin/listings', label: '🏠 จัดการทรัพย์' },
             { href: '/admin/listings/new', label: '➕ เพิ่มทรัพย์' },
+            { href: '/admin/inquiries', label: '📩 ข้อความติดต่อ' },
           ].map((item) => (
             <Link
               key={item.href}
