@@ -43,27 +43,48 @@ export default function PropertyForm({ property }: { property?: Property }) {
   async function geocodeAddress() {
     if (!addressSearch.trim()) return
     setGeoLoading(true)
-    setGeoMsg('')
+    setGeoMsg('🔍 กำลังค้นหา...')
+
+    // ── Tier 1: Longdo Search (ดีสำหรับ POI / ชื่อสถานที่ทั่วไป) ────────────
     try {
       const key = process.env.NEXT_PUBLIC_LONGDO_KEY ?? ''
       const q   = encodeURIComponent(addressSearch)
-      const res  = await fetch(
+      const res = await fetch(
         `https://search.longdo.com/mapsearch/json/search?keyword=${q}&key=${key}&limit=5`
       )
       const data = await res.json()
-      const results = data.data ?? []   // Longdo API uses 'data', not 'result'
+      const results = (data.data ?? []) as any[]
       if (results.length > 0) {
         const best = results[0]
         set('latitude',  parseFloat(best.lat))
         set('longitude', parseFloat(best.lon))
-        const name = best.name ?? best.address ?? 'พบตำแหน่ง'
-        setGeoMsg(`✅ พบพิกัด: ${name}`)
-      } else {
-        setGeoMsg('❌ ไม่พบพิกัด — ลองพิมพ์ที่อยู่ให้ละเอียดขึ้นค่ะ')
+        setGeoMsg(`✅ [Longdo] ${best.name ?? best.address ?? 'พบตำแหน่ง'}`)
+        setGeoLoading(false)
+        return
       }
-    } catch {
-      setGeoMsg('❌ เกิดข้อผิดพลาดค่ะ — ลองใหม่อีกครั้ง')
-    }
+    } catch { /* fall through to next tier */ }
+
+    // ── Tier 2: Nominatim (ดีสำหรับ ชื่อโครงการ / ที่อยู่ละเอียด) ────────────
+    try {
+      const query = addressSearch.includes('ไทย') ? addressSearch : `${addressSearch} ประเทศไทย`
+      const q = encodeURIComponent(query)
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=3&countrycodes=th&accept-language=th`,
+        { headers: { 'User-Agent': 'Resipecial/1.0' } }
+      )
+      const data = await res.json()
+      if (data.length > 0) {
+        const best = data[0]
+        set('latitude',  parseFloat(best.lat))
+        set('longitude', parseFloat(best.lon))
+        setGeoMsg(`✅ [OSM] ${best.display_name.slice(0, 80)}`)
+        setGeoLoading(false)
+        return
+      }
+    } catch { /* fall through */ }
+
+    // ── ไม่พบจากทั้ง 2 แหล่ง ─────────────────────────────────────────────────
+    setGeoMsg('❌ ไม่พบพิกัด — ลองใส่ ถนน + เขต + จังหวัด หรือปักหมุดบนแผนที่โดยตรงค่ะ')
     setGeoLoading(false)
   }
 
