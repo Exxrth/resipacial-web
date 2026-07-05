@@ -45,19 +45,22 @@ export default function PropertyForm({ property }: { property?: Property }) {
     setGeoLoading(true)
     setGeoMsg('')
     try {
-      const q = encodeURIComponent(addressSearch + ', ประเทศไทย')
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ''
+      const q = encodeURIComponent(addressSearch)
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=th`,
-        { headers: { 'Accept-Language': 'th' } }
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${q}&key=${apiKey}&language=th&region=TH`
       )
       const data = await res.json()
-      if (data.length > 0) {
-        const { lat, lon, display_name } = data[0]
-        set('latitude',  parseFloat(lat))
-        set('longitude', parseFloat(lon))
-        setGeoMsg(`✅ พบพิกัด: ${display_name.slice(0, 80)}...`)
-      } else {
+      if (data.status === 'OK' && data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location
+        const name = data.results[0].formatted_address
+        set('latitude',  lat)
+        set('longitude', lng)
+        setGeoMsg(`✅ พบพิกัด: ${name}`)
+      } else if (data.status === 'ZERO_RESULTS') {
         setGeoMsg('❌ ไม่พบพิกัด — ลองพิมพ์ที่อยู่ให้ละเอียดขึ้นค่ะ')
+      } else {
+        setGeoMsg(`❌ เกิดข้อผิดพลาด: ${data.status}`)
       }
     } catch {
       setGeoMsg('❌ เกิดข้อผิดพลาดค่ะ — ลองใหม่อีกครั้ง')

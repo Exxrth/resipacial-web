@@ -1,11 +1,7 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
-import {
-  GoogleMap,
-  Marker,
-  useJsApiLoader,
-} from '@react-google-maps/api'
+import { useCallback, useRef, useEffect } from 'react'
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api'
 
 interface Props {
   lat: number | null
@@ -14,7 +10,7 @@ interface Props {
 }
 
 const THAILAND_CENTER = { lat: 13.736717, lng: 100.523186 }
-const MAP_CONTAINER = { width: '100%', height: '340px' }
+const MAP_CONTAINER   = { width: '100%', height: '340px' }
 const MAP_OPTIONS: google.maps.MapOptions = {
   mapTypeControl: false,
   streetViewControl: false,
@@ -31,23 +27,25 @@ export default function AdminMapPicker({ lat, lng, onChange }: Props) {
 
   const mapRef = useRef<google.maps.Map | null>(null)
   const hasPin = lat != null && lng != null
-  const center = hasPin ? { lat, lng } : THAILAND_CENTER
-  const zoom   = hasPin ? 14 : 6
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map
   }, [])
 
-  const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      onChange(e.latLng.lat(), e.latLng.lng())
+  // Pan + zoom when coordinates are set externally (e.g. after geocoding)
+  useEffect(() => {
+    if (mapRef.current && lat != null && lng != null) {
+      mapRef.current.panTo({ lat, lng })
+      mapRef.current.setZoom(15)
     }
+  }, [lat, lng])
+
+  const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (e.latLng) onChange(e.latLng.lat(), e.latLng.lng())
   }, [onChange])
 
   const onMarkerDragEnd = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      onChange(e.latLng.lat(), e.latLng.lng())
-    }
+    if (e.latLng) onChange(e.latLng.lat(), e.latLng.lng())
   }, [onChange])
 
   if (loadError) return (
@@ -67,8 +65,8 @@ export default function AdminMapPicker({ lat, lng, onChange }: Props) {
       <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-sm">
         <GoogleMap
           mapContainerStyle={MAP_CONTAINER}
-          center={center}
-          zoom={zoom}
+          center={hasPin ? { lat, lng } : THAILAND_CENTER}
+          zoom={hasPin ? 14 : 6}
           options={MAP_OPTIONS}
           onClick={onMapClick}
           onLoad={onMapLoad}
@@ -83,7 +81,6 @@ export default function AdminMapPicker({ lat, lng, onChange }: Props) {
           )}
         </GoogleMap>
 
-        {/* Hint overlay */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
           <span className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full shadow">
             {hasPin ? '📍 ลากหมุดหรือคลิกเพื่อย้ายตำแหน่ง' : '🖱️ คลิกบนแผนที่เพื่อปักหมุด'}
@@ -91,15 +88,11 @@ export default function AdminMapPicker({ lat, lng, onChange }: Props) {
         </div>
       </div>
 
-      {/* Coordinates + clear button */}
       {hasPin && (
         <div className="flex items-center justify-between text-xs text-gray-500 px-1">
           <span>📍 {lat.toFixed(6)}, {lng.toFixed(6)}</span>
-          <button
-            type="button"
-            onClick={() => onChange(null, null)}
-            className="text-red-400 hover:text-red-600 underline"
-          >
+          <button type="button" onClick={() => onChange(null, null)}
+            className="text-red-400 hover:text-red-600 underline">
             ✕ ลบหมุด
           </button>
         </div>
