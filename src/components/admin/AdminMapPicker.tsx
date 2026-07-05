@@ -1,17 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-
-// Fix broken default marker icons in webpack/Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
+import { useCallback, useRef } from 'react'
+import {
+  GoogleMap,
+  Marker,
+  useJsApiLoader,
+} from '@react-google-maps/api'
 
 interface Props {
   lat: number | null
@@ -19,72 +13,80 @@ interface Props {
   onChange: (lat: number | null, lng: number | null) => void
 }
 
-/** Listens to map clicks → places/moves pin */
-function ClickHandler({ onChange }: { onChange: Props['onChange'] }) {
-  useMapEvents({
-    click(e) {
-      onChange(e.latlng.lat, e.latlng.lng)
-    },
-  })
-  return null
+const THAILAND_CENTER = { lat: 13.736717, lng: 100.523186 }
+const MAP_CONTAINER = { width: '100%', height: '340px' }
+const MAP_OPTIONS: google.maps.MapOptions = {
+  mapTypeControl: false,
+  streetViewControl: false,
+  fullscreenControl: true,
+  zoomControl: true,
 }
-
-/** Pans map to coordinates when they change externally (e.g. after geocoding) */
-function PanTo({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMapEvents({})
-  useEffect(() => {
-    map.setView([lat, lng], Math.max(map.getZoom(), 14))
-  }, [lat, lng, map])
-  return null
-}
-
-const THAILAND_CENTER: [number, number] = [13.736717, 100.523186]
 
 export default function AdminMapPicker({ lat, lng, onChange }: Props) {
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? '',
+    language: 'th',
+    region: 'TH',
+  })
+
+  const mapRef = useRef<google.maps.Map | null>(null)
   const hasPin = lat != null && lng != null
+  const center = hasPin ? { lat, lng } : THAILAND_CENTER
+  const zoom   = hasPin ? 14 : 6
+
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map
+  }, [])
+
+  const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      onChange(e.latLng.lat(), e.latLng.lng())
+    }
+  }, [onChange])
+
+  const onMarkerDragEnd = useCallback((e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      onChange(e.latLng.lat(), e.latLng.lng())
+    }
+  }, [onChange])
+
+  if (loadError) return (
+    <div className="rounded-xl bg-red-50 border border-red-200 flex items-center justify-center" style={{ height: 340 }}>
+      <p className="text-red-500 text-sm">❌ โหลด Google Maps ไม่สำเร็จ — ตรวจสอบ API key ค่ะ</p>
+    </div>
+  )
+
+  if (!isLoaded) return (
+    <div className="rounded-xl bg-gray-100 flex items-center justify-center animate-pulse" style={{ height: 340 }}>
+      <p className="text-gray-400 text-sm">กำลังโหลด Google Maps...</p>
+    </div>
+  )
 
   return (
     <div className="space-y-2">
-      {/* Map */}
-      <div className="relative rounded-xl overflow-hidden border border-blue-200" style={{ height: 340 }}>
-        <MapContainer
-          center={hasPin ? [lat, lng] : THAILAND_CENTER}
-          zoom={hasPin ? 14 : 6}
-          className="w-full h-full"
-          scrollWheelZoom
+      <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+        <GoogleMap
+          mapContainerStyle={MAP_CONTAINER}
+          center={center}
+          zoom={zoom}
+          options={MAP_OPTIONS}
+          onClick={onMapClick}
+          onLoad={onMapLoad}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
-          {/* Click to pin */}
-          <ClickHandler onChange={onChange} />
-
-          {/* Pan when coords come from geocoding */}
-          {hasPin && <PanTo lat={lat} lng={lng} />}
-
-          {/* Draggable marker */}
           {hasPin && (
             <Marker
-              position={[lat, lng]}
+              position={{ lat, lng }}
               draggable
-              eventHandlers={{
-                dragend(e) {
-                  const pos = (e.target as L.Marker).getLatLng()
-                  onChange(pos.lat, pos.lng)
-                },
-              }}
+              onDragEnd={onMarkerDragEnd}
+              animation={google.maps.Animation.DROP}
             />
           )}
-        </MapContainer>
+        </GoogleMap>
 
         {/* Hint overlay */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[999] pointer-events-none">
-          <span className="bg-black/60 text-white text-xs px-3 py-1 rounded-full">
-            {hasPin
-              ? '📍 ลากหมุดหรือคลิกเพื่อย้ายตำแหน่ง'
-              : '🖱️ คลิกบนแผนที่เพื่อปักหมุด'}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+          <span className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full shadow">
+            {hasPin ? '📍 ลากหมุดหรือคลิกเพื่อย้ายตำแหน่ง' : '🖱️ คลิกบนแผนที่เพื่อปักหมุด'}
           </span>
         </div>
       </div>
