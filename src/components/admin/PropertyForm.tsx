@@ -51,7 +51,7 @@ export default function PropertyForm({ property }: { property?: Property }) {
         `https://search.longdo.com/mapsearch/json/search?keyword=${q}&key=${key}&limit=5`
       )
       const data = await res.json()
-      const results = data.result ?? []
+      const results = data.data ?? []   // Longdo API uses 'data', not 'result'
       if (results.length > 0) {
         const best = results[0]
         set('latitude',  parseFloat(best.lat))
