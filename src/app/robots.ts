@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/'],
       },
     ],
-    sitemap: 'https://resipacial.vercel.app/sitemap.xml',
+    sitemap: 'https://resipecial.vercel.app/sitemap.xml',
   }
 }

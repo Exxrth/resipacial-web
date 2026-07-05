@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-const KEY = 'resipacial_favorites'
+const KEY = 'resipecial_favorites'
 
 function loadIds(): string[] {
   if (typeof window === 'undefined') return []
