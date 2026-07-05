@@ -49,8 +49,8 @@ export default function AdminMapPicker({ lat, lng, onChange }: Props) {
           scrollWheelZoom
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://map.longdo.com" target="_blank">Longdo Map</a>'
+            url={`https://ms.longdo.com/mmmap/tile.php?zoom={z}&x={x}&y={y}&key=${process.env.NEXT_PUBLIC_LONGDO_KEY}&proj=epsg3857&HD=1`}
           />
           <ClickHandler onChange={onChange} />
           {hasPin && <PanTo lat={lat} lng={lng} />}

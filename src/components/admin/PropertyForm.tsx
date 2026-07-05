@@ -45,21 +45,21 @@ export default function PropertyForm({ property }: { property?: Property }) {
     setGeoLoading(true)
     setGeoMsg('')
     try {
-      // ต่อ "ประเทศไทย" เพื่อให้ Nominatim ค้นหาในไทยได้แม่นขึ้น
-      const query = addressSearch.includes('ไทย') ? addressSearch : `${addressSearch}, ประเทศไทย`
-      const q = encodeURIComponent(query)
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=3&countrycodes=th&accept-language=th`,
-        { headers: { 'User-Agent': 'Resipecial/1.0 (real-estate-app)' } }
+      const key = process.env.NEXT_PUBLIC_LONGDO_KEY ?? ''
+      const q   = encodeURIComponent(addressSearch)
+      const res  = await fetch(
+        `https://search.longdo.com/mapsearch/json/search?keyword=${q}&key=${key}&limit=5`
       )
       const data = await res.json()
-      if (data.length > 0) {
-        const best = data[0]
+      const results = data.result ?? []
+      if (results.length > 0) {
+        const best = results[0]
         set('latitude',  parseFloat(best.lat))
         set('longitude', parseFloat(best.lon))
-        setGeoMsg(`✅ พบพิกัด: ${best.display_name.slice(0, 100)}`)
+        const name = best.name ?? best.address ?? 'พบตำแหน่ง'
+        setGeoMsg(`✅ พบพิกัด: ${name}`)
       } else {
-        setGeoMsg('❌ ไม่พบพิกัด — ลองพิมพ์ที่อยู่ให้ละเอียดขึ้น เช่น "ถนน ตำบล จังหวัด" ค่ะ')
+        setGeoMsg('❌ ไม่พบพิกัด — ลองพิมพ์ที่อยู่ให้ละเอียดขึ้นค่ะ')
       }
     } catch {
       setGeoMsg('❌ เกิดข้อผิดพลาดค่ะ — ลองใหม่อีกครั้ง')
