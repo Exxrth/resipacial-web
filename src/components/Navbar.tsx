@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import FavoritesNavLink from './FavoritesNavLink'
 
 export default function Navbar() {
   return (
@@ -11,6 +12,7 @@ export default function Navbar() {
           <Link href="/listings?status=for_sale" className="hover:text-blue-600 transition-colors">ซื้อ</Link>
           <Link href="/listings?status=for_rent" className="hover:text-blue-600 transition-colors">เช่า</Link>
           <Link href="/listings" className="hover:text-blue-600 transition-colors">ทรัพย์ทั้งหมด</Link>
+          <FavoritesNavLink />
         </nav>
         <Link
           href="/admin"

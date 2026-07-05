@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Property } from '@/types/property'
+import FavoriteButton from './FavoriteButton'
 
 const TYPE_LABELS: Record<string, string> = {
   house: 'บ้านเดี่ยว', condo: 'คอนโด', townhouse: 'ทาวน์เฮ้าส์',
@@ -43,6 +44,10 @@ export default function PropertyCard({ property }: { property: Property }) {
             ⭐ แนะนำ
           </span>
         )}
+        {/* Favorite button */}
+        <div className="absolute bottom-3 right-3">
+          <FavoriteButton propertyId={property.id} />
+        </div>
       </div>
 
       {/* Info */}

@@ -116,6 +116,25 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
               </div>
             </div>
 
+            {/* Google Maps */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <h2 className="font-semibold text-gray-900 mb-3">📍 ตำแหน่งที่ตั้ง</h2>
+              <div className="rounded-xl overflow-hidden border border-gray-100 aspect-[16/7]">
+                <iframe
+                  title="ตำแหน่งทรัพย์"
+                  width="100%"
+                  height="100%"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${property.location}, ${property.province}, ประเทศไทย`)}&output=embed&z=15`}
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                📍 {property.location}, {property.province}
+              </p>
+            </div>
+
             {/* Contact Form — full width below columns */}
             <div className="mt-6 pt-6 border-t border-gray-100">
               <ContactForm propertyId={property.id} contactName={property.contact_name} />
