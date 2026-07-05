@@ -1,9 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import type { Property, PropertyInsert } from '@/types/property'
 import ImageUploader from './ImageUploader'
+
+// Leaflet uses `window` — load client-side only
+const AdminMapPicker = dynamic(() => import('./AdminMapPicker'), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-xl bg-gray-100 flex items-center justify-center" style={{ height: 340 }}>
+      <p className="text-gray-400 text-sm">กำลังโหลดแผนที่...</p>
+    </div>
+  ),
+})
 
 const EMPTY: PropertyInsert = {
   title: '', description: '', type: 'house', status: 'for_sale',
@@ -189,7 +200,7 @@ export default function PropertyForm({ property }: { property?: Property }) {
             {geoMsg && <p className="text-xs mt-1.5 text-gray-600">{geoMsg}</p>}
           </div>
 
-          {/* Manual lat/lng */}
+          {/* Manual lat/lng inputs */}
           <div>
             <label className={label}>หรือใส่พิกัดเอง (Manual)</label>
             <div className="grid grid-cols-2 gap-3">
@@ -204,22 +215,21 @@ export default function PropertyForm({ property }: { property?: Property }) {
             </div>
           </div>
 
-          {/* Preview map if coords exist */}
-          {form.latitude && form.longitude && (
-            <div className="rounded-xl overflow-hidden border border-blue-100 aspect-[16/6]">
-              <iframe
-                title="ตัวอย่างพิกัด"
-                width="100%" height="100%"
-                src={`https://maps.google.com/maps?q=${form.latitude},${form.longitude}&output=embed&z=15`}
-                className="w-full h-full"
-              />
-            </div>
-          )}
+          {/* Interactive map picker — click or drag to pin */}
+          <div>
+            <label className={label}>หรือปักหมุดบนแผนที่</label>
+            <AdminMapPicker
+              lat={form.latitude}
+              lng={form.longitude}
+              onChange={(lat, lng) => {
+                set('latitude',  lat)
+                set('longitude', lng)
+              }}
+            />
+          </div>
 
           <p className="text-xs text-gray-400">
-            💡 หาพิกัดแบบ manual ได้จาก{' '}
-            <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Google Maps</a>
-            {' '}→ คลิกขวา → คัดลอกพิกัดค่ะ
+            💡 ค้นหาที่อยู่ด้านบน → แผนที่จะนำทางให้ → คลิกหรือลากหมุดเพื่อปรับตำแหน่งค่ะ
           </p>
         </div>
       </section>
