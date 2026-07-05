@@ -102,7 +102,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
               </div>
             </div>
 
-            {/* Google Maps */}
+            {/* Map — ใช้พิกัดที่บันทึกไว้ ถ้าไม่มีจึง fallback เป็นที่อยู่ */}
             <div className="mt-6 pt-6 border-t border-gray-100">
               <h2 className="font-semibold text-gray-900 mb-3">📍 ตำแหน่งที่ตั้ง</h2>
               <div className="rounded-xl overflow-hidden border border-gray-100 aspect-[16/7]">
@@ -112,12 +112,19 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                   height="100%"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${property.location}, ${property.province}, ประเทศไทย`)}&output=embed&z=15`}
+                  src={
+                    property.latitude && property.longitude
+                      ? `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&output=embed&z=16`
+                      : `https://maps.google.com/maps?q=${encodeURIComponent(`${property.location}, ${property.province}, ประเทศไทย`)}&output=embed&z=15`
+                  }
                   className="w-full h-full"
                 />
               </div>
               <p className="text-xs text-gray-400 mt-2">
                 📍 {property.location}, {property.province}
+                {property.latitude && property.longitude && (
+                  <span className="ml-2 text-green-500">✓ พิกัดแม่นยำ</span>
+                )}
               </p>
             </div>
 
