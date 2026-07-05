@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import ContactForm from '@/components/properties/ContactForm'
+import ImageGallery from '@/components/properties/ImageGallery'
 import type { Metadata } from 'next'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -35,30 +35,16 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
         <Link href="/listings" className="text-sm text-blue-600 hover:underline mb-6 inline-block">← กลับไปรายการทรัพย์</Link>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Image Gallery */}
-          <div className="relative aspect-[16/9] bg-gray-100">
-            <Image
-              src={property.images[0] ?? 'https://placehold.co/1200x675?text=No+Image'}
-              alt={property.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            <span className="absolute top-4 left-4 bg-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
+          {/* Image Gallery — clickable lightbox */}
+          <div className="relative">
+            <span className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full pointer-events-none">
               {STATUS_LABELS[property.status]} · {TYPE_LABELS[property.type]}
             </span>
+            <ImageGallery
+              images={property.images.length > 0 ? property.images : ['https://placehold.co/1200x675?text=No+Image']}
+              title={property.title}
+            />
           </div>
-
-          {/* Thumbnail row */}
-          {property.images.length > 1 && (
-            <div className="flex gap-2 p-4 overflow-x-auto">
-              {property.images.slice(1).map((img: string, i: number) => (
-                <div key={i} className="relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={img} alt={`รูปที่ ${i + 2}`} fill className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
 
           <div className="p-6 md:p-8">
             <div className="md:flex md:items-start md:justify-between gap-6">

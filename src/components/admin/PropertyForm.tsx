@@ -19,10 +19,39 @@ export default function PropertyForm({ property }: { property?: Property }) {
   const [featuresInput, setFeaturesInput] = useState(property?.features.join('\n') ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Address geocoding state
+  const [addressSearch, setAddressSearch] = useState('')
+  const [geoLoading, setGeoLoading]       = useState(false)
+  const [geoMsg, setGeoMsg]               = useState('')
   const router = useRouter()
 
   function set<K extends keyof PropertyInsert>(key: K, value: PropertyInsert[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function geocodeAddress() {
+    if (!addressSearch.trim()) return
+    setGeoLoading(true)
+    setGeoMsg('')
+    try {
+      const q = encodeURIComponent(addressSearch + ', ประเทศไทย')
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=th`,
+        { headers: { 'Accept-Language': 'th' } }
+      )
+      const data = await res.json()
+      if (data.length > 0) {
+        const { lat, lon, display_name } = data[0]
+        set('latitude',  parseFloat(lat))
+        set('longitude', parseFloat(lon))
+        setGeoMsg(`✅ พบพิกัด: ${display_name.slice(0, 80)}...`)
+      } else {
+        setGeoMsg('❌ ไม่พบพิกัด — ลองพิมพ์ที่อยู่ให้ละเอียดขึ้นค่ะ')
+      }
+    } catch {
+      setGeoMsg('❌ เกิดข้อผิดพลาดค่ะ — ลองใหม่อีกครั้ง')
+    }
+    setGeoLoading(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -122,7 +151,7 @@ export default function PropertyForm({ property }: { property?: Property }) {
       {/* Location */}
       <section>
         <h2 className="font-semibold text-gray-900 mb-4">ที่ตั้ง</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className={label}>ย่าน/พื้นที่ *</label>
             <input value={form.location} onChange={e => set('location', e.target.value)} required className={field} placeholder="เช่น อโศก, บางนา" />
@@ -131,28 +160,68 @@ export default function PropertyForm({ property }: { property?: Property }) {
             <label className={label}>จังหวัด *</label>
             <input value={form.province} onChange={e => set('province', e.target.value)} required className={field} placeholder="เช่น กรุงเทพมหานคร" />
           </div>
-          <div>
-            <label className={label}>Latitude (พิกัดเหนือ-ใต้)</label>
-            <input type="number" step="any"
-              value={form.latitude ?? ''}
-              onChange={e => set('latitude', e.target.value ? Number(e.target.value) : null)}
-              className={field} placeholder="เช่น 13.736717" />
-          </div>
-          <div>
-            <label className={label}>Longitude (พิกัดออก-ตก)</label>
-            <input type="number" step="any"
-              value={form.longitude ?? ''}
-              onChange={e => set('longitude', e.target.value ? Number(e.target.value) : null)}
-              className={field} placeholder="เช่น 100.523186" />
-          </div>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
-          💡 หาพิกัดได้จาก{' '}
-          <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">
-            Google Maps
-          </a>
-          {' '}→ คลิกขวาที่ตำแหน่ง → คัดลอกตัวเลขค่ะ
-        </p>
+
+        {/* Address geocoding */}
+        <div className="bg-blue-50 rounded-xl p-4 mb-4 space-y-3">
+          <p className="text-sm font-medium text-gray-700">📍 พิกัดบนแผนที่ (สำหรับ Map View)</p>
+
+          {/* Auto-search */}
+          <div>
+            <label className={label}>ค้นหาพิกัดจากที่อยู่ (อัตโนมัติ)</label>
+            <div className="flex gap-2">
+              <input
+                value={addressSearch}
+                onChange={e => setAddressSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), geocodeAddress())}
+                className={`flex-1 ${field}`}
+                placeholder="เช่น ถนนสุขุมวิท 21 กรุงเทพมหานคร"
+              />
+              <button
+                type="button"
+                onClick={geocodeAddress}
+                disabled={geoLoading || !addressSearch.trim()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {geoLoading ? '⌛ ค้นหา...' : '🔍 ค้นหา'}
+              </button>
+            </div>
+            {geoMsg && <p className="text-xs mt-1.5 text-gray-600">{geoMsg}</p>}
+          </div>
+
+          {/* Manual lat/lng */}
+          <div>
+            <label className={label}>หรือใส่พิกัดเอง (Manual)</label>
+            <div className="grid grid-cols-2 gap-3">
+              <input type="number" step="any"
+                value={form.latitude ?? ''}
+                onChange={e => set('latitude', e.target.value ? Number(e.target.value) : null)}
+                className={field} placeholder="Latitude เช่น 13.7367" />
+              <input type="number" step="any"
+                value={form.longitude ?? ''}
+                onChange={e => set('longitude', e.target.value ? Number(e.target.value) : null)}
+                className={field} placeholder="Longitude เช่น 100.5231" />
+            </div>
+          </div>
+
+          {/* Preview map if coords exist */}
+          {form.latitude && form.longitude && (
+            <div className="rounded-xl overflow-hidden border border-blue-100 aspect-[16/6]">
+              <iframe
+                title="ตัวอย่างพิกัด"
+                width="100%" height="100%"
+                src={`https://maps.google.com/maps?q=${form.latitude},${form.longitude}&output=embed&z=15`}
+                className="w-full h-full"
+              />
+            </div>
+          )}
+
+          <p className="text-xs text-gray-400">
+            💡 หาพิกัดแบบ manual ได้จาก{' '}
+            <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Google Maps</a>
+            {' '}→ คลิกขวา → คัดลอกพิกัดค่ะ
+          </p>
+        </div>
       </section>
 
       {/* Images & Features */}
