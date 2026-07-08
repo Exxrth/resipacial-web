@@ -1,18 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Luxury palette */
+  --navy: #1E3A5F;
+  --navy-deep: #16293F;
+  --gold: #C9A84C;
+  --gold-soft: #D9BE6E;
+  --soft-white: #FAFAF8;
+  --light-stone: #F5F2EE;
+  --charcoal: #1A1A2E;
+  --sage: #4A7C59;
+  --silver: #9B9B9B;
+
+  --background: var(--soft-white);
+  --foreground: var(--charcoal);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist);
+
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-soft-white: var(--soft-white);
+  --color-light-stone: var(--light-stone);
+  --color-charcoal: var(--charcoal);
+  --color-sage: var(--sage);
+  --color-silver: var(--silver);
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+  --font-price: var(--font-cormorant);
 }
 
 body {
-  background: #f9fafb;
-  color: #111827;
-  font-family: var(--font-geist), Arial, Helvetica, sans-serif;
+  background: var(--soft-white);
+  color: var(--charcoal);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Serif headline helper */
+.font-display {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+.font-price {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-variant-numeric: lining-nums;
+}
+
+/* Subtle gold divider */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
 }

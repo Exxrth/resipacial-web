@@ -11,10 +11,10 @@ const STATUS_LABELS: Record<string, string> = {
   for_sale: 'ขาย', for_rent: 'เช่า', sold: 'ขายแล้ว', rented: 'เช่าแล้ว',
 }
 const STATUS_COLORS: Record<string, string> = {
-  for_sale: 'bg-green-100 text-green-700',
-  for_rent: 'bg-blue-100 text-blue-700',
-  sold: 'bg-gray-100 text-gray-500',
-  rented: 'bg-gray-100 text-gray-500',
+  for_sale: 'bg-sage/90 text-white',
+  for_rent: 'bg-navy/90 text-white',
+  sold: 'bg-silver/80 text-white',
+  rented: 'bg-silver/80 text-white',
 }
 
 function formatPrice(price: number, status: string) {
@@ -26,21 +26,24 @@ export default function PropertyCard({ property }: { property: Property }) {
   const coverImage = property.images[0] ?? 'https://placehold.co/800x600?text=No+Image'
 
   return (
-    <Link href={`/listings/${property.id}`} className="group block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100">
+    <Link
+      href={`/listings/${property.id}`}
+      className="group block bg-white rounded-2xl shadow-[0_2px_20px_rgba(30,58,95,0.06)] hover:shadow-[0_8px_40px_rgba(30,58,95,0.14)] transition-all duration-300 overflow-hidden border border-light-stone hover:border-gold/40"
+    >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-light-stone">
         <Image
           src={coverImage}
           alt={property.title}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
-        <span className={`absolute top-3 left-3 text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[property.status]}`}>
+        <span className={`absolute top-3 left-3 text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm ${STATUS_COLORS[property.status]}`}>
           {STATUS_LABELS[property.status]}
         </span>
         {property.is_featured && (
-          <span className="absolute top-3 right-3 text-xs font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
+          <span className="absolute top-3 right-3 text-xs font-medium px-3 py-1 rounded-full bg-gold text-navy-deep shadow-sm">
             ⭐ แนะนำ
           </span>
         )}
@@ -51,23 +54,25 @@ export default function PropertyCard({ property }: { property: Property }) {
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="text-xs text-blue-600 font-medium mb-1">{TYPE_LABELS[property.type]}</p>
-        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+      <div className="p-5">
+        <p className="text-xs tracking-wide uppercase text-gold font-semibold mb-1">{TYPE_LABELS[property.type]}</p>
+        <h3 className="font-display text-lg text-navy line-clamp-2 mb-2 group-hover:text-gold transition-colors">
           {property.title}
         </h3>
-        <p className="text-sm text-gray-500 mb-3 flex items-center gap-1">
+        <p className="text-sm text-silver mb-3 flex items-center gap-1">
           <span>📍</span> {property.location}, {property.province}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
+        <div className="flex items-center gap-3 text-sm text-charcoal/70 mb-4">
           {property.bedrooms != null && <span>🛏 {property.bedrooms}</span>}
           {property.bathrooms != null && <span>🚿 {property.bathrooms}</span>}
           <span>📐 {property.area_sqm.toLocaleString()} ตร.ม.</span>
         </div>
 
-        <p className="text-lg font-bold text-blue-600">
+        <div className="gold-rule mb-3" />
+
+        <p className="font-price text-2xl font-semibold text-navy tracking-tight">
           {formatPrice(property.price, property.status)}
         </p>
       </div>

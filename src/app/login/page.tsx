@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-export default function AdminLoginPage() {
+export default function MemberLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -24,22 +24,19 @@ export default function AdminLoginPage() {
       setError('อีเมลหรือรหัสผ่านไม่ถูกต้องค่ะ')
       setLoading(false)
     } else {
-      router.push('/admin')
+      router.push('/')
       router.refresh()
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-navy px-4 relative overflow-hidden">
-      {/* Decorative gold glow */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gold/10 blur-3xl" />
-      <div className="absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-gold/5 blur-3xl" />
-
-      <div className="relative bg-soft-white rounded-2xl shadow-2xl border border-gold/20 p-8 w-full max-w-sm">
-        <div className="text-center mb-8">
-          <p className="text-gold text-xs tracking-[0.3em] uppercase mb-2">Resipecial</p>
-          <h1 className="font-display text-2xl font-bold text-navy">Admin Login</h1>
-          <p className="text-sm text-silver mt-1">สำหรับผู้ดูแลระบบ</p>
+    <div className="min-h-screen flex items-center justify-center bg-light-stone px-4 py-12">
+      <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,58,95,0.10)] border border-light-stone p-8 w-full max-w-sm">
+        <div className="text-center mb-7">
+          <Link href="/" className="font-display text-2xl font-bold text-navy">Resipecial</Link>
+          <div className="gold-rule w-16 mx-auto my-3" />
+          <h1 className="font-display text-xl text-navy">เข้าสู่ระบบสมาชิก</h1>
+          <p className="text-sm text-silver mt-1">ยินดีต้อนรับกลับค่ะ</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -50,8 +47,8 @@ export default function AdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border border-light-stone rounded-xl px-4 py-3 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
-              placeholder="admin@example.com"
+              className="w-full border border-light-stone rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold/50"
+              placeholder="you@example.com"
             />
           </div>
           <div>
@@ -61,7 +58,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-light-stone rounded-xl px-4 py-3 text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
+              className="w-full border border-light-stone rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold/50"
             />
           </div>
 
@@ -76,13 +73,13 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <div className="gold-rule my-6" />
-
-        <p className="text-center text-sm text-silver">
-          เป็นสมาชิกทั่วไป?{' '}
-          <Link href="/login" className="text-navy font-medium hover:text-gold transition-colors">
-            เข้าสู่ระบบสมาชิก
-          </Link>
+        <p className="text-center text-sm text-silver mt-6">
+          ยังไม่มีบัญชี?{' '}
+          <Link href="/register" className="text-gold font-medium hover:underline">สมัครสมาชิก</Link>
+        </p>
+        <p className="text-center text-xs text-silver/70 mt-3">
+          เป็นผู้ดูแลระบบ?{' '}
+          <Link href="/admin/login" className="text-navy hover:underline">เข้าสู่ระบบ Admin</Link>
         </p>
       </div>
     </div>

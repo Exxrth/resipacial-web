@@ -1,9 +1,24 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Playfair_Display, Inter, Cormorant_Garamond } from 'next/font/google'
 import ClientLayout from '@/components/ClientLayout'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+})
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: { default: 'Resipecial — Take a rest with your special place', template: '%s | Resipecial' },
@@ -20,8 +35,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+    <html
+      lang="th"
+      className={`${playfair.variable} ${inter.variable} ${cormorant.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-soft-white text-charcoal">
         {children}
         <ClientLayout />
       </body>
